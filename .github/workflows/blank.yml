@@ -18,8 +18,85 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+      - name: Setup Android SDK & Build Tools
+        uses: android-actions/setup-android@v3
+
+      - name: Prepare Project Structure
+        run: |
+          mkdir -p app/src/main/res/layout app/src/main/res/values app/src/main/res/drawable app/src/main/java/com/zaeem/trading
+          [ -f AndroidManifest.xml ] && mv AndroidManifest.xml app/src/main/
+          [ -f activity_main.xml ] && mv activity_main.xml app/src/main/res/layout/
+          [ -f activity_session_login.xml ] && mv activity_session_login.xml app/src/main/res/layout/
+          [ -f bg_button_gold.xml ] && mv bg_button_gold.xml app/src/main/res/drawable/
+          [ -f bg_input.xml ] && mv bg_input.xml app/src/main/res/drawable/
+          [ -f colors.xml ] && mv colors.xml app/src/main/res/values/
+          [ -f strings.xml ] && mv strings.xml app/src/main/res/values/
+          [ -f themes.xml ] && mv themes.xml app/src/main/res/values/
+          [ -f network_security_config.xml ] && mv network_security_config.xml app/src/main/res/xml/ || true
+
+          cat << 'EOF' > settings.gradle
+          pluginManagement {
+              repositories {
+                  google()
+                  mavenCentral()
+                  gradlePluginPortal()
+              }
+          }
+          dependencyResolutionManagement {
+              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          rootProject.name = "ZaeemTrading"
+          include ':app'
+          EOF
+
+          cat << 'EOF' > build.gradle
+          plugins {
+              id 'com.android.application' version '8.2.0' apply false
+          }
+          EOF
+
+          cat << 'EOF' > app/build.gradle
+          plugins {
+              id 'com.android.application'
+          }
+
+          android {
+              namespace 'com.zaeem.trading'
+              compileSdk 34
+
+              defaultConfig {
+                  applicationId "com.zaeem.trading"
+                  minSdk 24
+                  targetSdk 34
+                  versionCode 1
+                  versionName "1.0"
+              }
+
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_17
+                  targetCompatibility JavaVersion.VERSION_17
+              }
+          }
+
+          dependencies {
+              implementation 'androidx.appcompat:appcompat:1.6.1'
+              implementation 'com.google.android.material:material:1.11.0'
+              implementation 'androidx.webkit:webkit:1.10.0'
+          }
+          EOF
+
+      - name: Setup Gradle Wrapper
+        run: |
+          gradle wrapper --gradle-version 8.2
 
       - name: Build Debug APK
         run: ./gradlew assembleDebug
@@ -27,6 +104,6 @@ jobs:
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-debug
+          name: zaeem-trading-app
           path: app/build/outputs/apk/debug/app-debug.apk
           
