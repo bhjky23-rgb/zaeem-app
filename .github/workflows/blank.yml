@@ -18,20 +18,20 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK & Build Tools
-        uses: android-actions/setup-android@v3
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Prepare Project Structure
         run: |
-          mkdir -p app/src/main/res/layout app/src/main/res/values app/src/main/res/drawable app/src/main/java/com/zaeem/trading
-          [ -f AndroidManifest.xml ] && mv AndroidManifest.xml app/src/main/
-          [ -f activity_main.xml ] && mv activity_main.xml app/src/main/res/layout/
-          [ -f activity_session_login.xml ] && mv activity_session_login.xml app/src/main/res/layout/
-          [ -f bg_button_gold.xml ] && mv bg_button_gold.xml app/src/main/res/drawable/
-          [ -f bg_input.xml ] && mv bg_input.xml app/src/main/res/drawable/
-          [ -f colors.xml ] && mv colors.xml app/src/main/res/values/
-          [ -f strings.xml ] && mv strings.xml app/src/main/res/values/
-          [ -f themes.xml ] && mv themes.xml app/src/main/res/values/
+          mkdir -p app/src/main/res/layout app/src/main/res/values app/src/main/res/drawable app/src/main/res/xml app/src/main/java/com/zaeem/trading
+          [ -f AndroidManifest.xml ] && mv AndroidManifest.xml app/src/main/ || true
+          [ -f activity_main.xml ] && mv activity_main.xml app/src/main/res/layout/ || true
+          [ -f activity_session_login.xml ] && mv activity_session_login.xml app/src/main/res/layout/ || true
+          [ -f bg_button_gold.xml ] && mv bg_button_gold.xml app/src/main/res/drawable/ || true
+          [ -f bg_input.xml ] && mv bg_input.xml app/src/main/res/drawable/ || true
+          [ -f colors.xml ] && mv colors.xml app/src/main/res/values/ || true
+          [ -f strings.xml ] && mv strings.xml app/src/main/res/values/ || true
+          [ -f themes.xml ] && mv themes.xml app/src/main/res/values/ || true
           [ -f network_security_config.xml ] && mv network_security_config.xml app/src/main/res/xml/ || true
 
           cat << 'EOF' > settings.gradle
@@ -94,12 +94,8 @@ jobs:
           }
           EOF
 
-      - name: Setup Gradle Wrapper
-        run: |
-          gradle wrapper --gradle-version 8.2
-
-      - name: Build Debug APK
-        run: ./gradlew assembleDebug
+      - name: Build Debug APK with Gradle
+        run: gradle assembleDebug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
