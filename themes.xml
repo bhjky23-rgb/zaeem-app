@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.ZaeemTrading" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/gold</item>
+        <item name="colorPrimaryDark">@color/charcoal</item>
+        <item name="colorAccent">@color/gold</item>
+        <item name="android:windowBackground">@color/charcoal</item>
+        <item name="android:statusBarColor">@color/charcoal</item>
+        <item name="android:navigationBarColor">@color/charcoal</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>
