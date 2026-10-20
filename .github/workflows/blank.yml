@@ -1,4 +1,4 @@
-name: Build Android APK
+name: Build PocketOption Bridge APK
 
 on:
   push:
@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
       - name: Set up JDK 17
@@ -21,21 +21,23 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Accept Android SDK Licenses
-        run: yes | sdkmanager --licenses || true
-
-      - name: Prepare Project Structure
+      - name: Build Project Structure
         run: |
           mkdir -p app/src/main/res/layout app/src/main/res/values app/src/main/res/drawable app/src/main/res/xml app/src/main/java/com/zaeem/trading
-          [ -f AndroidManifest.xml ] && mv AndroidManifest.xml app/src/main/ || true
-          [ -f activity_main.xml ] && mv activity_main.xml app/src/main/res/layout/ || true
-          [ -f activity_session_login.xml ] && mv activity_session_login.xml app/src/main/res/layout/ || true
-          [ -f bg_button_gold.xml ] && mv bg_button_gold.xml app/src/main/res/drawable/ || true
-          [ -f bg_input.xml ] && mv bg_input.xml app/src/main/res/drawable/ || true
-          [ -f colors.xml ] && mv colors.xml app/src/main/res/values/ || true
-          [ -f strings.xml ] && mv strings.xml app/src/main/res/values/ || true
-          [ -f themes.xml ] && mv themes.xml app/src/main/res/values/ || true
-          [ -f network_security_config.xml ] && mv network_security_config.xml app/src/main/res/xml/ || true
+          [ -f AndroidManifest.xml ] && cp AndroidManifest.xml app/src/main/ || true
+          [ -f activity_main.xml ] && cp activity_main.xml app/src/main/res/layout/ || true
+          [ -f activity_session_login.xml ] && cp activity_session_login.xml app/src/main/res/layout/ || true
+          [ -f bg_button_gold.xml ] && cp bg_button_gold.xml app/src/main/res/drawable/ || true
+          [ -f bg_input.xml ] && cp bg_input.xml app/src/main/res/drawable/ || true
+          [ -f colors.xml ] && cp colors.xml app/src/main/res/values/ || true
+          [ -f strings.xml ] && cp strings.xml app/src/main/res/values/ || true
+          [ -f themes.xml ] && cp themes.xml app/src/main/res/values/ || true
+          [ -f network_security_config.xml ] && cp network_security_config.xml app/src/main/res/xml/ || true
+
+          cat << 'EOF' > settings.gradle
+          rootProject.name = "ZaeemTrading"
+          include ':app'
+          EOF
 
           cat << 'EOF' > build.gradle
           buildscript {
@@ -53,11 +55,6 @@ jobs:
                   mavenCentral()
               }
           }
-          EOF
-
-          cat << 'EOF' > settings.gradle
-          rootProject.name = "ZaeemTrading"
-          include ':app'
           EOF
 
           cat << 'EOF' > app/build.gradle
@@ -87,19 +84,14 @@ jobs:
           }
           EOF
 
-      - name: Download and Setup Gradle
+      - name: Build APK via Gradle
         run: |
-          wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip
-          unzip -q gradle-8.2-bin.zip
-          sudo ln -s $(pwd)/gradle-8.2/bin/gradle /usr/bin/gradle
+          gradle wrapper --gradle-version 8.1.1
+          ./gradlew assembleDebug
 
-      - name: Build Debug APK
-        run: gradle assembleDebug
-
-      - name: Upload APK Artifact
+      - name: Upload APK File
         uses: actions/upload-artifact@v4
         with:
-          name: zaeem-trading-app
+          name: Zaeem-Trading-App-APK
           path: app/build/outputs/apk/debug/app-debug.apk
-
           
