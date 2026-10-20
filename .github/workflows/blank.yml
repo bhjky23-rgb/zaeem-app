@@ -21,9 +21,6 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
       - name: Prepare Project Structure
         run: |
           mkdir -p app/src/main/res/layout app/src/main/res/values app/src/main/res/drawable app/src/main/res/xml app/src/main/java/com/zaeem/trading
@@ -37,35 +34,31 @@ jobs:
           [ -f themes.xml ] && mv themes.xml app/src/main/res/values/ || true
           [ -f network_security_config.xml ] && mv network_security_config.xml app/src/main/res/xml/ || true
 
+          cat << 'EOF' > build.gradle
+          buildscript {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.1.0'
+              }
+          }
+          allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+          EOF
+
           cat << 'EOF' > settings.gradle
-          pluginManagement {
-              repositories {
-                  google()
-                  mavenCentral()
-                  gradlePluginPortal()
-              }
-          }
-          dependencyResolutionManagement {
-              repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
-              repositories {
-                  google()
-                  mavenCentral()
-              }
-          }
           rootProject.name = "ZaeemTrading"
           include ':app'
           EOF
 
-          cat << 'EOF' > build.gradle
-          plugins {
-              id 'com.android.application' version '8.2.0' apply false
-          }
-          EOF
-
           cat << 'EOF' > app/build.gradle
-          plugins {
-              id 'com.android.application'
-          }
+          apply plugin: 'com.android.application'
 
           android {
               namespace 'com.zaeem.trading'
@@ -77,12 +70,6 @@ jobs:
                   targetSdk 34
                   versionCode 1
                   versionName "1.0"
-              }
-
-              buildTypes {
-                  release {
-                      minifyEnabled false
-                  }
               }
               compileOptions {
                   sourceCompatibility JavaVersion.VERSION_17
@@ -97,14 +84,14 @@ jobs:
           }
           EOF
 
-      - name: Generate Gradle Wrapper
-        run: gradle wrapper --gradle-version 8.2
+      - name: Download and Setup Gradle
+        run: |
+          wget -q https://services.gradle.org/distributions/gradle-8.2-bin.zip
+          unzip -q gradle-8.2-bin.zip
+          sudo ln -s $(pwd)/gradle-8.2/bin/gradle /usr/bin/gradle
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Build Debug APK with Wrapper
-        run: ./gradlew assembleDebug
+      - name: Build Debug APK
+        run: gradle assembleDebug
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
