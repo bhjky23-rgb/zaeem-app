@@ -21,6 +21,9 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: Accept Android SDK Licenses
+        run: yes | sdkmanager --licenses || true
+
       - name: Prepare Project Structure
         run: |
           mkdir -p app/src/main/res/layout app/src/main/res/values app/src/main/res/drawable app/src/main/res/xml app/src/main/java/com/zaeem/trading
